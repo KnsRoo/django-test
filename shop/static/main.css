@@ -1,0 +1,145 @@
+div{
+	margin-top: 15%;
+    text-align: center;
+}
+
+.login{
+	margin-top: 0%;
+	float: right;
+	color: white;
+}
+
+.login a{
+	color: white;
+}
+
+.wide{
+	width: 1500px;
+	height: 30px;
+}
+
+.pagination{
+	margin-top: 0%;
+    text-align: center;
+}
+
+.menu{
+	margin-top: 0%;
+	background-color: #249cf2;
+}
+
+.menu h2{
+	color: white;
+}
+
+ul#dmenu li{
+	display: inline-block;
+	padding: 0px 10px;
+}
+
+ul#menu li{
+	display: inline-block;
+	padding: 0px 100px;
+	color: white;
+}
+
+ul#menu li:hover{
+	background: white;
+}
+
+ul#menu li:hover a{
+	color: #249cf2;
+}
+
+ul#menu li.selected{
+	background: white;
+}
+
+ul#menu li.selected a{
+	color: #249cf2;
+}
+
+ul#menu li a{
+	color: white;
+	text-decoration: None;
+}
+
+h2{
+	color: red;
+}
+
+table{
+	table-layout: fixed;
+	<!--width: 1500px;-->
+}
+
+.widetd{
+	width: 400px;
+}
+
+table a{
+	display: inline-block;
+	vertical-align: middle;	
+}
+
+table img.sep{
+	width: 400px;
+	height: 75px;
+	display: block;
+ 	margin-left: auto;
+ 	margin-right: auto;
+ 	cursor: default;
+}
+
+table img{
+	width: 32px;
+	height: 32px;
+	vertical-align: middle;	
+	cursor: pointer;
+}
+
+table td{
+	width: 180px
+	padding-left: 10px;
+}
+
+td.stand{
+	width: 180px
+}
+
+input{
+	width: 180px;
+}
+
+textarea{
+	width: 400px;
+	height: 200px;
+}
+
+.pad{
+	padding-top: 15px;
+}
+
+.pad td{
+	padding-bottom: 15px;
+}
+
+.pad tr.noned a{
+	color: black;
+	text-decoration: None;
+}
+
+.narrow{
+	width: 100px;
+	vertical-align: middle;
+}
+
+.wrap{
+	width: 400px;
+	word-wrap: break-word;
+}
+
+.description{
+	width: 400px;
+    vertical-align: top;
+}

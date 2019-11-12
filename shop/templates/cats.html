@@ -1,0 +1,183 @@
+{% load staticfiles %}
+<head>
+<link rel="stylesheet" type="text/css" href="{% static 'main.css' %}" />
+<script type="text/javascript" src="{% static 'script.js' %}"></script>
+</head>
+<div class = "login">
+<a>{{user}}</a> <a href = 'log_out'>Выйти</a>
+</div>
+<div class = "menu">
+<center>
+    <ul id = "menu">
+        <li class ='selected'><h2><a href = "cats">Категории товаров</a></h2></li>
+        <li><h2><a href = "goods">Список товаров</a></h2></li>
+    </ul>
+</center>
+</div>
+<div class="pagination">
+    <span class="step-links">
+        {% if categories.has_previous %}
+            <a href="?cpp={{cpp}}&page={{ categories.previous_page_number }}">Предыдущая</a>
+        {% endif %}
+
+        <span class="current">
+            Страница {{ categories.number }} из {{ categories.paginator.num_pages }}.
+        </span>
+
+        {% if categories.has_next %}
+            <a href="?cpp={{cpp}}&page={{ categories.next_page_number }}">Следующая</a>
+        {% endif %}
+    </span>
+    <span>Отображать по</span>
+    <select id = "selector_u" onchange = "select(0,'{{categories.number}}')">
+        {% if cpp == 5 %}
+        <option selected value="5">5</option>
+        <option value="10">10</option>
+        <option value="15">15</option>
+        <option value="20">20</option>
+        {% endif %}
+        {% if cpp == 10 %}
+        <option value="5">5</option>
+        <option selected value="10">10</option>
+        <option value="15">15</option>
+        <option value="20">20</option>
+        {% endif %}
+        {% if cpp == 15 %}
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option selected value="15">15</option>
+        <option value="20">20</option>
+        {% endif %}
+        {% if cpp == 20 %}
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="15">15</option>
+        <option selected value="20">20</option>
+        {% endif %}
+    </select>
+    <span>на странице</span>
+</div>
+<center>
+<table class = 'pad'>
+	<tr class = 'noned'>
+		<td width = '180px'><a href = "?sortMethod=1&cpp={{cpp}}page=1"><strong>Категория</strong>
+        </a></td>
+		<td class = 'narrow'><a href = "?sortMethod=2&cpp={{cpp}}page=1"><strong>Кол-во товаров</a></strong></td>
+		<td class = "widetd"><strong>Описание</strong></td>
+		<td class = "narrow"><strong>Действия</strong></td>
+        {% if canchange %}
+        {% if not addCat %}
+	</tr>
+        <td><img allign = "left" width="32" height="32" src = '{% static "images/add.png" %}'/>
+            <a href = '?addCat=1&page={{categories.number}}&cpp={{cpp}}'>Добавить категорию</a>
+        </td>
+        {% endif %}
+        {% endif %}
+    </tr>
+</table>
+<table>
+<form id = 'myform' method="POST" action = '?page={{categories.numver}}&cpp={{cpp}}&edit={{editcategory}}&savecat=1'>
+{% if addCat%}
+ {% csrf_token %}
+    <tr>
+        <td colspan = '2'><img src = '{% static "images/folder.png" %}'/><input id = "newcat" name = 'newname' type = 'text'></td>
+        <!--<td class = 'narrow'></td>-->
+        <td class ='desctiption'><textarea name = "newdescription"></textarea></td>
+        <td class = 'narrow'><img src = '{% static "images/save.png" %}' href = '#' onclick = "check('{{all_c}}')"/>
+        <img src = '{% static "images/cancel.png" %}' onclick = 'window.location.href = "?cpp={{cpp}}&page={{categories.number}}"'/></td>
+    </tr>
+    <tr>
+        <td colspan = "4"><img class = "sep" src = '{% static "images/sep.png" %}'/></td>
+    </tr>
+</form>
+{%endif%}
+<form method="POST">
+{% csrf_token %}
+{% for category in categories %}
+			<tr>
+				<td width = '180px'>
+                    <img onclick = "window.location.href='goods?filter={{category.0}}'" src = '{% static "images/folder.png" %}'/>
+					{% if editcategory == category.0 %}
+						<input type = 'text' name = 'editname' value = '{{editcategory}}'></input>
+					{% else %}
+						<a href = 'goods?filter={{category.0}}'>{{ category.0 }}</a>
+					{% endif %}
+				</td>
+				<td class = 'narrow'>{{ category.1 }}</td>
+				<td class = 'description'>
+					{% if editcategory == category.0 %}
+						<textarea name = 'editdescription'>{{category.2}}</textarea>
+					{% else %}
+                        {% if show == category.0 %}
+                        <a class = "wrap">{{ category.2 }}</a><a href = '?cpp={{cpp}}&page={{categories.number}}'>Скрыть</a>
+                        {% else %}
+					   <a class = "wrap">{{ category.2|truncatechars:150 }}</a><a href = '?cpp={{cpp}}&show={{category.0}}&page={{categories.number}}'>Показать полностью</a>
+                       {% endif %}
+					{% endif %}
+					</td>
+				<td class = 'narrow'>
+                    {% if canchange %}
+					{% if editcategory == category.0 %}
+					<img src = '{% static "images/save.png" %}' title="Сохранить"/ href = '#' onclick = "document.forms['myform'].submit()"/>
+                    <img src = '{% static "images/cancel.png" %}' title="Отменить"/ href='#' onclick = "window.location.href ='?cpp={{cpp}}&page={{categories.number}}'"/>
+					{% else %}
+                    <!--<img src = '{% static "images/view.png" %}' href = '?target={{category.0}}'/>-->
+					<img src = '{% static "images/edit.jpg" %}' href = '#' title="Редактировать"/ onclick = "window.location.href = '?page={{categories.number}}&edit={{category.0}}'"/>
+                    <img src = '{% static "images/delete.png" %}' title="Удалить"/ href='#' onclick = "confirmDelete('{{category.0}}','{{categories.number}}','{{cpp}}')"/>
+					{% endif %}
+                    {% else %}
+                    <img src = '{% static "images/dis.png" %}' title="Доступно только для администраторов"/>
+                    {% endif %}
+				</td>
+			</tr>
+            <tr>
+                <td colspan = "4"><img class = "sep" src = '{% static "images/sep.png" %}'/></td>
+            </tr>
+{% endfor %}
+</form>
+</table>
+</center>
+
+<div class="pagination">
+    <span class="step-links">
+        {% if categories.has_previous %}
+            <a href="?cpp={{cpp}}&page={{ categories.previous_page_number }}">Предыдущая</a>
+        {% endif %}
+
+        <span class="current">
+            Страница {{ categories.number }} из {{ categories.paginator.num_pages }}.
+        </span>
+
+        {% if categories.has_next %}
+            <a href="?cpp={{cpp}}&page={{ categories.next_page_number }}">Следующая</a>
+        {% endif %}
+    </span>
+        <span>Отображать по</span>
+    <select id = 'selector_d' onchange = "select(1, '{{categories.number}}')">
+        {% if cpp == 5 %}
+        <option selected value="5">5</option>
+        <option value="10">10</option>
+        <option value="15">15</option>
+        <option value="20">20</option>
+        {% endif %}
+        {% if cpp == 10 %}
+        <option value="5">5</option>
+        <option selected value="10">10</option>
+        <option value="15">15</option>
+        <option value="20">20</option>
+        {% endif %}
+        {% if cpp == 15 %}
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option selected value="15">15</option>
+        <option value="20">20</option>
+        {% endif %}
+        {% if cpp == 20 %}
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="15">15</option>
+        <option selected value="20">20</option>
+        {% endif %}
+    </select>
+    <span>на странице</span>
+</div>

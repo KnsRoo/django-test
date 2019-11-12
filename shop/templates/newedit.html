@@ -1,0 +1,109 @@
+{% load staticfiles %}
+<head>
+<link rel="stylesheet" type="text/css" href="{% static 'main.css' %}" />
+<script type="text/javascript" src="{% static 'script.js' %}"></script>
+</head>
+<center>
+<div class = "menu">
+{% if addGood %}
+<h2>Добавление товара</h2>
+</div>
+<form method= 'POST' name = "submitf" action = 'addGood'>
+{% csrf_token %}
+<table>
+	<tr>
+		<td><strong>Название товара*</strong></td>
+		<td>
+			<input name = 'name' type = text value = {{values.0}}></input>
+			{% if exists%}
+			<a color = "red">В данной категории уже существует товар с таким именем</a>
+			{% endif %}
+		</td>
+	</tr>
+	<tr>
+		<td><strong>Категория*</strong><input name = 'cat' hidden = 'true' id = 'cat' value = ''></input></td> 
+		<td>
+			<select id = 'catselector' onchange = 'select_good_cat()'>
+				<option selected disabled="true">Выберите категорию</option>
+				{% for category in categories %}
+			        <option value = '{{category.0}}' >{{category.0}}</option>
+			    {% endfor%}
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td><strong>Изображение</strong></td>
+		<td class = "wrap"><input type="file" id="file" name="file"></input></td>
+	</tr>
+	<tr>
+		<td><strong>Описание</strong></td>
+		<td><textarea name = 'description'>{{values.2}}</textarea></td>
+	</tr>
+	<tr>
+		<td><strong>Кол-во на складе</strong></td>
+		<td><input name = "count" type="number" step="1" value = {{values.3}}></input></td>
+	</tr>
+	<tr>
+		<td><strong>Цена</strong></td>
+		<td><input name = "price" type="number" step="0.01" value = {{values.4}}></td>
+	</tr>
+<table>
+	<ul id = "dmenu">
+		<li><input type="submit" value = 'Добавить'/></li>
+		<li><input type ="button" value = 'Отменить' onclick = 'window.close()'/></li>
+	</ul>
+</form>
+{% else %}
+<h2>Редактирование товара</h2>
+</div>
+<form name = 'editForm' method= 'POST' action = 'editGood?pk={{good.pk}}'>
+{% csrf_token %}
+<input name = 'cat' hidden = 'true' id = 'cat' value = '{{good.category.name}}'></input>
+<table>
+	<tr>
+		<td>Название товара</td>
+		<td>
+			<input type = text name = 'name' value = {{good.name}}></input>
+			{% if exists%}
+			<a color = "red">В данной категории уже существует товар с таким именем</a>
+			{% endif %}
+		</td>
+	</tr>
+	<tr>
+		<td>Изображение</td>
+		<td><input type="file" id="file" name="file"></input></td>
+	</tr>
+	<tr>
+		<td>Описание</td> 
+		<td><textarea name = 'description'>{{good.description}}</textarea></td>
+	</tr>
+	<tr>
+		<td>Категория</td> 
+		<td>
+			<select id = 'catselector' onchange = 'select_good_cat()'>
+			{% for category in categories %}
+				{% if good.category.name == category.0%}
+        			<option selected>{{category.0}}</option>
+        		{% else %}
+        		<option>{{category.0}}</option>
+        		{% endif %}
+    		{% endfor%}
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td>Кол-во на складе</td>
+		<td><input name = "count" type="number" value = {{good.count}} step="1"></td>
+	</tr>
+	<tr>
+		<td>Цена</td>
+		<td><input name = "price" type="number" value = {{good.price}} step="0.01"></td>
+	</tr>
+</table>
+<ul id = "dmenu">
+	<li><input type="submit" value = 'Сохранить'/></li>
+	<li><input type = "button" value = 'Отменить' onClick = 'window.close()'/></li>
+</ul>
+</form>
+{% endif %}
+</center>

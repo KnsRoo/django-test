@@ -1,0 +1,20 @@
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'main.css' %}" />
+<body>
+	<div>
+	<form method = "GET" action="log_in">
+		{% csrf_token %}
+	<h1>Авторизация</h1>
+	{% if error %}
+        <h2>{{ error }}</h2>
+	{% endif %}
+	<p><b>Имя пользователя:</b><br>
+   	<input type="text" name="login" size="20">
+  </p>
+  <p><b>Пароль:</b><br>
+   <input type="text" name="password" size="20">
+  </p>
+  <button type="submit" value="cats">Войти</button>
+  		</form>
+	</div>
+</body>
