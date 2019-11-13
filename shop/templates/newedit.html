@@ -8,15 +8,15 @@
 {% if addGood %}
 <h2>Добавление товара</h2>
 </div>
-<form method= 'POST' enctype="multipart/form-data" name = "submitf" action = 'addGood'>
+<form method= 'POST' enctype="multipart/form-data" name = "addf" action = 'addGood'>
 {% csrf_token %}
 <table>
 	<tr>
 		<td><strong>Название товара*</strong></td>
 		<td>
-			<input name = 'name' type = text value = {{values.0}}></input>
-			{% if exists%}
-			<a color = "red">В данной категории уже существует товар с таким именем</a>
+			<input id = 'name' name = 'name' type = text value = {{values.0}}></input><br>
+			{% if exists %}
+			<a id = "red">В данной категории уже имеется товар с таким именем</a>
 			{% endif %}
 		</td>
 	</tr>
@@ -26,7 +26,7 @@
 			<select id = 'catselector' onchange = 'select_good_cat()'>
 				<option selected disabled="true">Выберите категорию</option>
 				{% for category in categories %}
-			        <option value = '{{category.0}}' >{{category.0}}</option>
+			        <option value = '{{category}}' >{{category}}</option>
 			    {% endfor%}
 			</select>
 		</td>
@@ -37,35 +37,35 @@
 	</tr>
 	<tr>
 		<td><strong>Описание</strong></td>
-		<td><textarea name = 'description'>{{values.2}}</textarea></td>
+		<td><textarea name = 'description'>{{values.1}}</textarea></td>
 	</tr>
 	<tr>
 		<td><strong>Кол-во на складе</strong></td>
-		<td><input name = "count" type="number" step="1" value = {{values.3}}></input></td>
+		<td><input name = "count" type="number" step="1" value = {{values.2}}></input></td>
 	</tr>
 	<tr>
 		<td><strong>Цена</strong></td>
-		<td><input name = "price" type="number" step="0.01" value = {{values.4}}></td>
+		<td><input name = "price" type="number" step="0.01" value = {{values.3}}></td>
 	</tr>
 <table>
 	<ul id = "dmenu">
-		<li><input type="submit" value = 'Добавить'/></li>
+		<li><input type="button" onclick = 'submit_form("addf")' value = 'Добавить'/></li>
 		<li><input type ="button" value = 'Отменить' onclick = 'window.close()'/></li>
 	</ul>
 </form>
 {% else %}
 <h2>Редактирование товара</h2>
 </div>
-<form name = 'editForm' method= 'POST' enctype="multipart/form-data" action = 'editGood?pk={{good.pk}}'>
+<form name = 'editf' method= 'POST' enctype="multipart/form-data" action = 'editGood?pk={{good.pk}}'>
 {% csrf_token %}
 <input name = 'cat' hidden = 'true' id = 'cat' value = '{{good.category.name}}'></input>
 <table>
 	<tr>
 		<td>Название товара</td>
 		<td>
-			<input type = text name = 'name' value = {{good.name}}></input>
+			<input type = text id = 'name' name = 'name' value = {{good.name}}></input><br>
 			{% if exists%}
-			<a color = "red">В данной категории уже существует товар с таким именем</a>
+			<a id = "red">В данной категории уже существует товар с таким именем</a>
 			{% endif %}
 		</td>
 	</tr>
@@ -82,10 +82,10 @@
 		<td>
 			<select id = 'catselector' onchange = 'select_good_cat()'>
 			{% for category in categories %}
-				{% if good.category.name == category.0%}
-        			<option selected>{{category.0}}</option>
+				{% if good.category.name == category%}
+        			<option selected>{{category}}</option>
         		{% else %}
-        		<option>{{category.0}}</option>
+        		<option>{{category}}</option>
         		{% endif %}
     		{% endfor%}
 			</select>
@@ -101,7 +101,7 @@
 	</tr>
 </table>
 <ul id = "dmenu">
-	<li><input type="submit" value = 'Сохранить'/></li>
+	<li><input type="button" onclick = 'submit_form("editf")' value = 'Сохранить'/></li>
 	<li><input type = "button" value = 'Отменить' onClick = 'window.close()'/></li>
 </ul>
 </form>

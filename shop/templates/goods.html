@@ -9,8 +9,8 @@
 <div class = "menu">
 <center>
     <ul id = "menu">
-        <li><h2><a href = "cats">Категории товаров</a></h2></li>
-        <li class ='selected'><h2><a href = "goods">Список товаров</a></h2></li>
+        <li><h2><a href = "cats?sortMethod=1">Категории товаров</a></h2></li>
+        <li class ='selected'><h2><a href = "goods?sortMethod=1">Список товаров</a></h2></li>
     </ul>
 </div>
 </center>
@@ -72,12 +72,34 @@
     <span>на странице</span>
 </div>
 <center>
+
 <table class = 'pad'>
 	<tr class = 'noned'>
         <td class = 'middle'><strong>Изображение</strong></a></td>
-		<td class = 'narrow'><a onclick = "set_sort(1,'{{filter}}', '{{cpp}}')" href = "#"><strong>Название товара</strong></a></td>
-		<td class = 'narrow'><a onclick = "set_sort(2,'{{filter}}', '{{cpp}}')" href = "#"><strong>Кол-во на складе</strong></a></td>
-        <td class = 'narrow'><a onclick = "set_sort(3,'{{filter}}', '{{cpp}}')" href = "#"><strong>Цена</strong></a></td>
+		<td class = 'narrow'><a onclick = "set_sort_goods(1,'{{filter}}', '{{cpp}}')" href = "#"><strong>Название</strong></a>
+            {% if sort == '1' %}
+            <img class = "sort" src = '{% static "images/sort_up.png" %}'/>
+            {% elif sort == '1R' %}
+            <img class = "sort" src = '{% static "images/sort_down.png" %}'/>
+            {% else %}
+            <img class = "sort" src = '{% static "images/no_sort.png" %}'/>
+            {% endif %} </td>
+		<td class = 'narrow'><a onclick = "set_sort_goods(2,'{{filter}}', '{{cpp}}')" href = "#"><strong>Кол-во</strong></a>
+            {% if sort == '2' %}
+            <img class = "sort" src = '{% static "images/sort_up.png" %}'/>
+            {% elif sort == '2R' %}
+            <img class = "sort" src = '{% static "images/sort_down.png" %}'/>
+            {% else %}
+            <img class = "sort" src = '{% static "images/no_sort.png" %}'/>
+            {% endif %}</td>
+        <td class = 'narrow'><a onclick = "set_sort_goods(3,'{{filter}}', '{{cpp}}')" href = "#"><strong>Цена</strong></a>
+            {% if sort == '3' %}
+            <img class = "sort" src = '{% static "images/sort_up.png" %}'/>
+            {% elif sort == '3R' %}
+            <img class = "sort" src = '{% static "images/sort_down.png" %}'/>
+            {% else %}
+            <img class = "sort" src = '{% static "images/no_sort.png" %}'/>
+            {% endif %}</td>
 		<td class = 'widetd'><strong>Описание</strong></td>
         <td class = 'narrow'><strong>Категория</strong></td>
 		<td class = 'narrow'><strong>Действия</strong></td>

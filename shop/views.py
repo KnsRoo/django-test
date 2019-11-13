@@ -9,7 +9,6 @@ from random import randint, uniform
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Sum
 from shop.query import Query
-import simplejson
 
 query = Query()
 
@@ -36,14 +35,16 @@ def index(request):
 							price = str(round(uniform(100.0, 2000.0),2)),
 							description = ('Описание'+str(i))*400)
 			temp_good.save()
+	if request.user.is_authenticated:
+		return cats(request)
 	return render(request, "index.html")
 
 def goods(request):
+	if not request.user.is_authenticated:
+		return render(request, "index.html")
 	gpp, show = 10, 0
 	if request.GET.get('cpp'):
 		gpp = request.GET.get('cpp')
-	if not request.user.is_authenticated:
-		return render(request, "index.html")
 	goods = Goods.objects.all()
 	if request.GET.get('delete'):
 		Goods.objects.get(pk = request.GET.get('delete')).delete()
@@ -53,34 +54,38 @@ def goods(request):
 	if filtr:
 		if filtr != 'None' and filtr != 'undefined':
 			goods = Goods.objects.filter(category__name = request.GET.get('filter'))
-	sort = request.GET.get('sortMethod')
+	sorts = { '1': 'name', '1R': '-name',
+			  '2': 'count', '2R': '-count',
+			  '3': 'price', '3R': '-price' }
+	if request.GET.get('sortMethod'): 
+		sort = request.GET.get('sortMethod')
+	else:
+		sort = '1'
 	if sort != 'None' and sort != 'undefined':
-		if sort == '1': goods = goods.order_by('name')
-		if sort == '2': goods = goods.order_by('count')
-		if sort == '3': goods = goods.order_by('price')
-		if sort == '1R': goods = goods.order_by('-name') 
-		if sort == '2R': goods = goods.order_by('-count') 
-		if sort == '3R': goods = goods.order_by('-price') 
-	paginator = Paginator(goods, gpp)
+		goods = goods.order_by(sorts[sort])
 	page = request.GET.get('page')
-	try:
-		categories = paginator.page(page)
-	except PageNotAnInteger:
-		categories = paginator.page(1)
-	except EmptyPage:
-		categories = paginator.page(paginator.num_pages)
-	return render(request, "goods.html", {'canchange': request.user.has_perm('shop.can_change'),'show': int(show), 'cpp': int(gpp), 'username': request.user.username, "filter": filtr, "sort": sort, "categories": query.result, "goods": categories})
+	goods_ = paginate(page, gpp, goods)
+	context = {'canchange': request.user.has_perm('shop.can_change'),
+			   'show': int(show), 'cpp': int(gpp), 'username': request.user.username,
+			   'filter': filtr, 'sort': sort, 'categories': query.result, 'goods': goods_}
+	return render(request, "goods.html", context)
 
-def deletecat(request):
+def deletecat(request, page, sort, show, cpp):
+	editcategory, addCat = None, False
 	if not request.user.is_authenticated:
 		return render(request, "index.html")
 	target = request.GET.get('delete')
 	Goods.objects.filter(category__name = target).delete()
 	Categories.objects.filter(name = target).delete()
 	query.update()
-	return cats(request)
+	categories = paginate(page, cpp, query.result)
+	context = {'sort': sort, 'canchange': request.user.has_perm('shop.can_change'),
+			   'user': request.user.username, 'show': show, 'cpp': cpp, 'categories': categories,
+			    'all_c': query.jsoncats(), 'addCat': addCat, 'editcategory': editcategory }
+	return render(request, 'cats.html', context)
 
-def savecat(request):
+def savecat(request, page, sort, show, cpp):
+	editcategory, addCat = None, False
 	if not request.user.is_authenticated:
 		return render(request, "index.html")
 	if 'newname' in request.POST:
@@ -95,24 +100,35 @@ def savecat(request):
 		Object = Categories.objects.filter(name = oldname)
 		Object.update(name = newname, description = newdescription)
 	query.update()
-	return cats(request)
+	categories = paginate(page, cpp, query.result)
+	context = {'sort': sort, 'canchange': request.user.has_perm('shop.can_change'),
+			   'user': request.user.username, 'show': show, 'cpp': cpp, 'categories': categories,
+			    'all_c': query.jsoncats(), 'addCat': addCat, 'editcategory': editcategory }
+	return render(request, 'cats.html', context)
 
 def addGood(request):
 	if not request.user.is_authenticated:
 		return render(request, "index.html")
 	name = request.POST.get('name')
 	description = request.POST.get('description')
-	image_file = request.FILES['file']
 	category = Categories.objects.filter(name = request.POST.get('cat'))[:1].get()
 	exists = Goods.objects.filter(category = category).filter(name = name).exists()
 	count = request.POST.get('count')
 	price = request.POST.get('price')
 	if exists:
-		return render(request, 'newedit.html', {"values": [name, image, description,
+		return render(request, 'newedit.html', {"values": [name, description,
 		 count, price],"exists": True, "categories": query.result, "addGood": True })
-	newGood = Goods(name = name, image = image_file, description = description, category = category,
+	if count == '': count = 0
+	if price == '': price = 0.0
+	if request.FILES:
+		image_file = request.FILES['file']
+		newGood = Goods(name = name, image = image_file, description = description, category = category,
 		count = count, price = price)
-	newGood.save()
+		newGood.save()
+	else:
+		newGood = Goods(name = name, description = description, category = category,
+		count = count, price = price)
+		newGood.save()
 	return render(request,"form.html")
 
 def editGood(request):
@@ -123,52 +139,61 @@ def editGood(request):
 	category = Categories.objects.filter(name = request.POST.get('cat'))[:1].get()
 	exists = Goods.objects.filter(category = category).filter(name = name)[:1].get()
 	if exists.pk != int(request.GET.get('pk')):
-		return render(request, 'newedit.html', {"exists": True, "categories": query.result, "addGood": False})
+		return render(request, 'newedit.html', {"good": Object, "values": [name, description,
+		 count, price],"exists": True, "categories": query.cats(), "addGood": False})
 	count = request.POST.get('count')
 	price = request.POST.get('price')
-	print('deleting file')
+	if count == '': count = 0
+	if price == '': price = 0.0
 	if request.FILES:
 		Goods.objects.get(pk = request.GET.get('pk')).delete()
-		print('create new file with image')
 		image_file = request.FILES['file']
 		newGood = Goods(name = name, image = image_file, description = description, category = category,
 		count = count, price = price)
 		newGood.save()
 	else:
 		Object = Goods.objects.filter(pk = request.GET.get('pk'))
-		print('create new file without image')
 		Object.update(name = name, description = description, category = category,
 		count = count, price = price)
 	return render(request,"form.html")
 
+def paginate(page, cpp, target):
+	paginator = Paginator(target, cpp)
+	try:
+		paginated = paginator.page(page)
+	except PageNotAnInteger:
+		paginated = paginator.page(1)
+	except EmptyPage:
+		paginated = paginator.page(paginator.num_pages)
+	return paginated
+
 def cats(request):
 	if not request.user.is_authenticated:
 		return render(request, "index.html")
-	cpp, show, addCat, editcategory = 10, 0, False, None
+	query.sortByCategory('1')
+	cpp, show, addCat, editcategory, sort = 10, 0, False, None, '1'
 	if request.GET.get('sortMethod'):
 		if request.GET.get('sortMethod') != 'undefined':
 			query.sortByCategory(request.GET.get('sortMethod'))
+			sort = request.GET.get('sortMethod')
 	if request.GET.get('show'):
 		show = request.GET.get('show')
 	if request.GET.get('cpp'):
 		cpp = int(request.GET.get('cpp'))
-	paginator = Paginator(query.result, cpp)
 	page = request.GET.get('page')
-	try:
-		categories = paginator.page(page)
-	except PageNotAnInteger:
-		categories = paginator.page(1)
-	except EmptyPage:
-		categories = paginator.page(paginator.num_pages)
+	categories = paginate(page,cpp,query.result)
 	if request.GET.get('edit'):
 		editcategory = request.GET.get('edit')
 	if request.GET.get('addCat'):
-		addCat = True
+			addCat = True
 	if request.GET.get('savecat'):
-		return savecat(request)
+		return savecat(request, page, sort, show, cpp)
 	if request.GET.get('delete'):
-		return deletecat(request)
-	return render(request, 'cats.html', {'canchange': request.user.has_perm('shop.can_change'), 'user': request.user.username, "show": show, "cpp": cpp, "categories": categories, "all_c": simplejson.dumps(query.all_c), "addCat": addCat, "editcategory": editcategory })
+		return deletecat(request, page, sort, show, cpp)
+	context = {'sort': sort, 'canchange': request.user.has_perm('shop.can_change'),
+			   'user': request.user.username, 'show': show, 'cpp': cpp, 'categories': categories,
+			    'all_c': query.jsoncats(), 'addCat': addCat, 'editcategory': editcategory }
+	return render(request, 'cats.html', context)
 
 def log_out(request):
 	if not request.user.is_authenticated:
@@ -183,7 +208,7 @@ def newedit(request):
 	if request.GET.get('edit'):
 		addGood = False
 		Object = Goods.objects.get(pk = request.GET.get('edit'))
-	return render(request, 'newedit.html', { "categories": query.result, "good": Object, "addGood": addGood})
+	return render(request, 'newedit.html', { "categories": query.cats(), "good": Object, "addGood": addGood})
 
 def log_in(request):
 	error = None

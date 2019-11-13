@@ -15,8 +15,35 @@ function close_w() {
     window.close();
 }
 
-function set_sort(num, filter, cpp){
+function submit_form(name){
+    if (document.getElementById('name').value == '') 
+        alert('Имя товара не может быть путым')
+    else if (document.getElementById('catselector').value == 'Выберите категорию') 
+        alert('Товар должен принадлежать одной из категорий')
+    else document.forms[name].submit()
+}
+
+function set_sort_cats(num, cpp){
     var t, sm = new URL(document.location).searchParams.get('sortMethod')
+    if (sm == null) sm = '1'
+    switch (num){
+        case 1: {
+            t = "?sortMethod=1&page=1&cpp="+cpp
+            if (sm == '1')  t = "?sortMethod=1R&page=1&cpp="+cpp
+            if (sm == '1R') t = "?sortMethod=1&page=1&cpp="+cpp
+        } break
+        case 2: {
+            t = "?sortMethod=2&page=1&cpp="+cpp
+            if (sm == '2')  t = "?sortMethod=2R&page=1&cpp="+cpp
+            if (sm == '2R') t = "?sortMethod=2&page=1&cpp="+cpp 
+        } break
+    }
+    window.location.href = t
+}
+
+function set_sort_goods(num, filter, cpp){
+    var t, sm = new URL(document.location).searchParams.get('sortMethod')
+    if (sm == null) sm = '1'
     switch (num){
         case 1: {
             t = "?filter="+filter+"&sortMethod=1&page=1&cpp="+cpp

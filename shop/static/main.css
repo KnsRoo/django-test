@@ -64,7 +64,7 @@ ul#menu li a{
 	text-decoration: None;
 }
 
-h2{
+#red{
 	color: red;
 }
 
@@ -89,6 +89,12 @@ table img.sep{
  	margin-left: auto;
  	margin-right: auto;
  	cursor: default;
+}
+
+table img.sort{
+	width: 24px;
+	height: 24px;
+	vertical-align: top;
 }
 
 table img{
@@ -140,7 +146,7 @@ textarea{
 }
 
 .middle{
-	width: 140px;
+	width: 150px;
 }
 
 .wrap{

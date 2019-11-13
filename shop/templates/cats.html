@@ -9,8 +9,8 @@
 <div class = "menu">
 <center>
     <ul id = "menu">
-        <li class ='selected'><h2><a href = "cats">Категории товаров</a></h2></li>
-        <li><h2><a href = "goods">Список товаров</a></h2></li>
+        <li class ='selected'><h2><a href = "cats?sortMethod=1">Категории товаров</a></h2></li>
+        <li><h2><a href = "goods?sortMethod=1">Список товаров</a></h2></li>
     </ul>
 </center>
 </div>
@@ -60,9 +60,23 @@
 <center>
 <table class = 'pad'>
 	<tr class = 'noned'>
-		<td width = '180px'><a href = "?sortMethod=1&cpp={{cpp}}page=1"><strong>Категория</strong>
-        </a></td>
-		<td class = 'narrow'><a href = "?sortMethod=2&cpp={{cpp}}page=1"><strong>Кол-во товаров</a></strong></td>
+		<td width = '180px'><a onclick = "set_sort_cats(1,'{{cpp}}')" href = "#"><strong>Категория</strong>
+        </a>
+        {% if sort == '1' %}
+            <img class = "sort" src = '{% static "images/sort_up.png" %}'/>
+            {% elif sort == '1R' %}
+            <img class = "sort" src = '{% static "images/sort_down.png" %}'/>
+            {% else %}
+            <img class = "sort" src = '{% static "images/no_sort.png" %}'/>
+            {% endif %}</td>
+		<td class = 'narrow'><a onclick = "set_sort_cats(2,'{{cpp}}')" href = "#"><strong>Кол-во</a></strong>
+            {% if sort == '2' %}
+            <img class = "sort" src = '{% static "images/sort_up.png" %}'/>
+            {% elif sort == '2R' %}
+            <img class = "sort" src = '{% static "images/sort_down.png" %}'/>
+            {% else %}
+            <img class = "sort" src = '{% static "images/no_sort.png" %}'/>
+            {% endif %}</td>
 		<td class = "widetd"><strong>Описание</strong></td>
 		<td class = "narrow"><strong>Действия</strong></td>
         {% if canchange %}
