@@ -74,8 +74,8 @@
 <center>
 <table class = 'pad'>
 	<tr class = 'noned'>
-        <td class = 'narrow'><strong>Изображение</strong></a></td>
-		<td><a onclick = "set_sort(1,'{{filter}}', '{{cpp}}')" href = "#"><strong>Название товара</strong></a></td>
+        <td class = 'middle'><strong>Изображение</strong></a></td>
+		<td class = 'narrow'><a onclick = "set_sort(1,'{{filter}}', '{{cpp}}')" href = "#"><strong>Название товара</strong></a></td>
 		<td class = 'narrow'><a onclick = "set_sort(2,'{{filter}}', '{{cpp}}')" href = "#"><strong>Кол-во на складе</strong></a></td>
         <td class = 'narrow'><a onclick = "set_sort(3,'{{filter}}', '{{cpp}}')" href = "#"><strong>Цена</strong></a></td>
 		<td class = 'widetd'><strong>Описание</strong></td>
@@ -95,10 +95,14 @@
 <table>
 {% for good in goods %}
 			<tr>
-                <td class = 'narrow'>
-                    <a>{{ good.image }}</a>
+                <td class = 'middle'>
+                    {% if good.image  %}
+                    <img class = "photo" src="{% static good.image.url %}">
+                    {% else %}
+                    <a>Нет</a>
+                    {% endif %}
                 </td>
-				<td>
+				<td class = 'narrow'>
 					<a>{{ good.name }}</a>
 				</td>
                 <td class = 'narrow'>

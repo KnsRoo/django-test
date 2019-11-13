@@ -102,7 +102,7 @@ def addGood(request):
 		return render(request, "index.html")
 	name = request.POST.get('name')
 	description = request.POST.get('description')
-	image_file = request.FILES['file'].file.read()
+	image_file = request.FILES['file']
 	category = Categories.objects.filter(name = request.POST.get('cat'))[:1].get()
 	exists = Goods.objects.filter(category = category).filter(name = name).exists()
 	count = request.POST.get('count')
@@ -119,16 +119,25 @@ def editGood(request):
 	if not request.user.is_authenticated:
 		return render(request, "index.html") 
 	name = request.POST.get('name')
-	image_file = request.FILES['file'].file.read()
 	description = request.POST.get('description')
 	category = Categories.objects.filter(name = request.POST.get('cat'))[:1].get()
-	exists = Goods.objects.filter(category = category).filter(name = name).exists()
-	if exists:
+	exists = Goods.objects.filter(category = category).filter(name = name)[:1].get()
+	if exists.pk != int(request.GET.get('pk')):
 		return render(request, 'newedit.html', {"exists": True, "categories": query.result, "addGood": False})
 	count = request.POST.get('count')
 	price = request.POST.get('price')
-	Object = Goods.objects.get(pk = request.GET.get('pk'))
-	Object.update(name = name, image = image_file, description = description, category = category,
+	print('deleting file')
+	if request.FILES:
+		Goods.objects.get(pk = request.GET.get('pk')).delete()
+		print('create new file with image')
+		image_file = request.FILES['file']
+		newGood = Goods(name = name, image = image_file, description = description, category = category,
+		count = count, price = price)
+		newGood.save()
+	else:
+		Object = Goods.objects.filter(pk = request.GET.get('pk'))
+		print('create new file without image')
+		Object.update(name = name, description = description, category = category,
 		count = count, price = price)
 	return render(request,"form.html")
 

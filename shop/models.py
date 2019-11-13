@@ -1,6 +1,6 @@
+from django.core.files.storage import FileSystemStorage
+from django.conf import settings
 from django.db import models
-
-# Create your models here.
 
 class Categories(models.Model):
 	name = models.CharField(max_length=20)
@@ -8,7 +8,7 @@ class Categories(models.Model):
 
 class Goods(models.Model):
 	name = models.CharField(max_length=50)
-	image = models.BinaryField(blank=True)
+	image = models.ImageField(blank=True, upload_to = "gallery/")
 	category = models.ForeignKey(Categories, on_delete = models.CASCADE)
 	count = models.IntegerField()
 	price = models.FloatField()
