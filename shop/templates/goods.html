@@ -18,10 +18,10 @@
 <select id = 'catselect' onchange= "selectcat()" class = "wide">
     <option value = ''>Все товары</option>
     {% for category in categories %}
-        {% if filter == category.0 %}
-        <option selected value = '{{category.0}}'>{{category.0}}</option>
+        {% if filter == category %}
+        <option selected value = '{{category}}'>{{category}}</option>
         {% else %}
-        <option value = '{{category.0}}'>{{category.0}}</option>
+        <option value = '{{category}}'>{{category}}</option>
         {% endif %}
         }
     {% endfor%}

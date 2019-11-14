@@ -3,14 +3,13 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 from shop.models import Categories, Goods
 from django.contrib.auth.models import User, Permission
+from django.db.models import F, Value, CharField, IntegerField
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth import authenticate, login, logout
 from random import randint, uniform
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Sum
-from shop.query import Query
-
-query = Query()
+import json
 
 def index(request):
 	if not User.objects.all().exists():
@@ -64,10 +63,11 @@ def goods(request):
 	if sort != 'None' and sort != 'undefined':
 		goods = goods.order_by(sorts[sort])
 	page = request.GET.get('page')
+	catlist = sorted(list(Categories.objects.values_list('name', flat=True)))
 	goods_ = paginate(page, gpp, goods)
 	context = {'canchange': request.user.has_perm('shop.can_change'),
 			   'show': int(show), 'cpp': int(gpp), 'username': request.user.username,
-			   'filter': filtr, 'sort': sort, 'categories': query.result, 'goods': goods_}
+			   'filter': filtr, 'sort': sort, 'categories': catlist, 'goods': goods_}
 	return render(request, "goods.html", context)
 
 def deletecat(request, page, sort, show, cpp):
@@ -77,11 +77,13 @@ def deletecat(request, page, sort, show, cpp):
 	target = request.GET.get('delete')
 	Goods.objects.filter(category__name = target).delete()
 	Categories.objects.filter(name = target).delete()
-	query.update()
-	categories = paginate(page, cpp, query.result)
+	annotated = annotate()
+	catlist = sorted(list(Categories.objects.values_list('name', flat=True)))
+	cats = json.dumps(catlist)
+	categories = paginate(page, cpp, annotated)
 	context = {'sort': sort, 'canchange': request.user.has_perm('shop.can_change'),
 			   'user': request.user.username, 'show': show, 'cpp': cpp, 'categories': categories,
-			    'all_c': query.jsoncats(), 'addCat': addCat, 'editcategory': editcategory }
+			    'all_c': cats, 'addCat': addCat, 'editcategory': editcategory }
 	return render(request, 'cats.html', context)
 
 def savecat(request, page, sort, show, cpp):
@@ -99,11 +101,13 @@ def savecat(request, page, sort, show, cpp):
 		newdescription = request.POST.get('editdescription')
 		Object = Categories.objects.filter(name = oldname)
 		Object.update(name = newname, description = newdescription)
-	query.update()
-	categories = paginate(page, cpp, query.result)
+	annotated = annotate()
+	catlist = sorted(list(Categories.objects.values_list('name', flat=True)))
+	cats = json.dumps(catlist)
+	categories = paginate(page, cpp, annotated)
 	context = {'sort': sort, 'canchange': request.user.has_perm('shop.can_change'),
 			   'user': request.user.username, 'show': show, 'cpp': cpp, 'categories': categories,
-			    'all_c': query.jsoncats(), 'addCat': addCat, 'editcategory': editcategory }
+			    'all_c': cats, 'addCat': addCat, 'editcategory': editcategory }
 	return render(request, 'cats.html', context)
 
 def addGood(request):
@@ -137,9 +141,10 @@ def editGood(request):
 	name = request.POST.get('name')
 	description = request.POST.get('description')
 	category = Categories.objects.filter(name = request.POST.get('cat'))[:1].get()
-	exists = Goods.objects.filter(category = category).filter(name = name)[:1].get()
-	if exists.pk != int(request.GET.get('pk')):
-		return render(request, 'newedit.html', {"good": Object, "values": [name, description,
+	exists = Goods.objects.filter(category = category).filter(name = name)
+	if exists.exists():
+		if exists[:1].get().pk != int(request.GET.get('pk')):
+			return render(request, 'newedit.html', {"good": Object, "values": [name, description,
 		 count, price],"exists": True, "categories": query.cats(), "addGood": False})
 	count = request.POST.get('count')
 	price = request.POST.get('price')
@@ -167,21 +172,26 @@ def paginate(page, cpp, target):
 		paginated = paginator.page(paginator.num_pages)
 	return paginated
 
+def annotate():
+	annotated = Categories.objects.all().order_by("name").annotate(sum_field = Value(0, IntegerField()))
+	for item in annotated:
+		query = Goods.objects.filter(category__name = item.name).aggregate(Sum('count'))
+		item.sum_field = query['count__sum'] if query['count__sum'] != None else 0
+	return annotated
+
 def cats(request):
 	if not request.user.is_authenticated:
 		return render(request, "index.html")
-	query.sortByCategory('1')
+	catlist = sorted(list(Categories.objects.values_list('name', flat=True)))
+	cats = json.dumps(catlist)
+	annotated = annotate()
 	cpp, show, addCat, editcategory, sort = 10, 0, False, None, '1'
-	if request.GET.get('sortMethod'):
-		if request.GET.get('sortMethod') != 'undefined':
-			query.sortByCategory(request.GET.get('sortMethod'))
-			sort = request.GET.get('sortMethod')
 	if request.GET.get('show'):
 		show = request.GET.get('show')
 	if request.GET.get('cpp'):
 		cpp = int(request.GET.get('cpp'))
 	page = request.GET.get('page')
-	categories = paginate(page,cpp,query.result)
+	categories = paginate(page,cpp,annotated)
 	if request.GET.get('edit'):
 		editcategory = request.GET.get('edit')
 	if request.GET.get('addCat'):
@@ -192,7 +202,7 @@ def cats(request):
 		return deletecat(request, page, sort, show, cpp)
 	context = {'sort': sort, 'canchange': request.user.has_perm('shop.can_change'),
 			   'user': request.user.username, 'show': show, 'cpp': cpp, 'categories': categories,
-			    'all_c': query.jsoncats(), 'addCat': addCat, 'editcategory': editcategory }
+			    'all_c': cats, 'addCat': addCat, 'editcategory': editcategory }
 	return render(request, 'cats.html', context)
 
 def log_out(request):

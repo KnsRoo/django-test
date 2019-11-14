@@ -60,23 +60,9 @@
 <center>
 <table class = 'pad'>
 	<tr class = 'noned'>
-		<td width = '180px'><a onclick = "set_sort_cats(1,'{{cpp}}')" href = "#"><strong>Категория</strong>
-        </a>
-        {% if sort == '1' %}
-            <img class = "sort" src = '{% static "images/sort_up.png" %}'/>
-            {% elif sort == '1R' %}
-            <img class = "sort" src = '{% static "images/sort_down.png" %}'/>
-            {% else %}
-            <img class = "sort" src = '{% static "images/no_sort.png" %}'/>
-            {% endif %}</td>
-		<td class = 'narrow'><a onclick = "set_sort_cats(2,'{{cpp}}')" href = "#"><strong>Кол-во</a></strong>
-            {% if sort == '2' %}
-            <img class = "sort" src = '{% static "images/sort_up.png" %}'/>
-            {% elif sort == '2R' %}
-            <img class = "sort" src = '{% static "images/sort_down.png" %}'/>
-            {% else %}
-            <img class = "sort" src = '{% static "images/no_sort.png" %}'/>
-            {% endif %}</td>
+		<td width = '180px'><a><strong>Категория</strong>
+        </a></td>
+		<td class = 'narrow'><a><strong>Кол-во</a></strong></td>
 		<td class = "widetd"><strong>Описание</strong></td>
 		<td class = "narrow"><strong>Действия</strong></td>
         {% if canchange %}
@@ -95,7 +81,6 @@
  {% csrf_token %}
     <tr>
         <td colspan = '2'><img src = '{% static "images/folder.png" %}'/><input id = "newcat" name = 'newname' type = 'text'></td>
-        <!--<td class = 'narrow'></td>-->
         <td class ='desctiption'><textarea name = "newdescription"></textarea></td>
         <td class = 'narrow'><img src = '{% static "images/save.png" %}' href = '#' onclick = "check('{{all_c}}')"/>
         <img src = '{% static "images/cancel.png" %}' onclick = 'window.location.href = "?cpp={{cpp}}&page={{categories.number}}"'/></td>
@@ -110,34 +95,33 @@
 {% for category in categories %}
 			<tr>
 				<td width = '180px'>
-                    <img onclick = "window.location.href='goods?filter={{category.0}}'" src = '{% static "images/folder.png" %}'/>
-					{% if editcategory == category.0 %}
+                    <img onclick = "window.location.href='goods?filter={{category.name}}'" src = '{% static "images/folder.png" %}'/>
+					{% if editcategory == category.name %}
 						<input type = 'text' name = 'editname' value = '{{editcategory}}'></input>
 					{% else %}
-						<a href = 'goods?filter={{category.0}}'>{{ category.0 }}</a>
+						<a href = 'goods?filter={{category.name}}'>{{ category.name }}</a>
 					{% endif %}
 				</td>
-				<td class = 'narrow'>{{ category.1 }}</td>
+				<td class = 'narrow'>{{ category.sum_field }}</td>
 				<td class = 'description'>
-					{% if editcategory == category.0 %}
-						<textarea name = 'editdescription'>{{category.2}}</textarea>
+					{% if editcategory == category.name %}
+						<textarea name = 'editdescription'>{{category.description}}</textarea>
 					{% else %}
-                        {% if show == category.0 %}
-                        <a class = "wrap">{{ category.2 }}</a><a href = '?cpp={{cpp}}&page={{categories.number}}'>Скрыть</a>
+                        {% if show == category.name %}
+                        <a class = "wrap">{{ category.description }}</a><a href = '?cpp={{cpp}}&page={{categories.number}}'>Скрыть</a>
                         {% else %}
-					   <a class = "wrap">{{ category.2|truncatechars:150 }}</a><a href = '?cpp={{cpp}}&show={{category.0}}&page={{categories.number}}'>Показать полностью</a>
+					   <a class = "wrap">{{ category.description|truncatechars:150 }}</a><a href = '?cpp={{cpp}}&show={{category.name}}&page={{categories.number}}'>Показать полностью</a>
                        {% endif %}
 					{% endif %}
 					</td>
 				<td class = 'narrow'>
                     {% if canchange %}
-					{% if editcategory == category.0 %}
+					{% if editcategory == category.name %}
 					<img src = '{% static "images/save.png" %}' title="Сохранить"/ href = '#' onclick = "document.forms['myform'].submit()"/>
                     <img src = '{% static "images/cancel.png" %}' title="Отменить"/ href='#' onclick = "window.location.href ='?cpp={{cpp}}&page={{categories.number}}'"/>
 					{% else %}
-                    <!--<img src = '{% static "images/view.png" %}' href = '?target={{category.0}}'/>-->
-					<img src = '{% static "images/edit.jpg" %}' href = '#' title="Редактировать"/ onclick = "window.location.href = '?page={{categories.number}}&edit={{category.0}}'"/>
-                    <img src = '{% static "images/delete.png" %}' title="Удалить"/ href='#' onclick = "confirmDelete('{{category.0}}','{{categories.number}}','{{cpp}}')"/>
+					<img src = '{% static "images/edit.jpg" %}' href = '#' title="Редактировать"/ onclick = "window.location.href = '?page={{categories.number}}&edit={{category.name}}'"/>
+                    <img src = '{% static "images/delete.png" %}' title="Удалить"/ href='#' onclick = "confirmDelete('{{category.name}}','{{categories.number}}','{{cpp}}')"/>
 					{% endif %}
                     {% else %}
                     <img src = '{% static "images/dis.png" %}' title="Доступно только для администраторов"/>
